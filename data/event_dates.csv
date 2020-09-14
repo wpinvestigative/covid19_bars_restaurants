@@ -1,0 +1,158 @@
+state,name,detail,date
+AK,Alaska,shut down,2020-03-28
+AK,Alaska,restaurants reopen,2020-04-24
+AK,Alaska,bars reopen,2020-05-08
+AL,Alabama,shut down,2020-04-04
+AL,Alabama,restaurants reopen,2020-05-11
+AL,Alabama,bars reopen,2020-05-11
+AR,Arkansas,shut down,2020-03-20
+AR,Arkansas,restaurants reopen,2020-05-11
+AR,Arkansas,bars reopen,2020-05-26
+AZ,Arizona,shut down,2020-03-31
+AZ,Arizona,restaurants reopen,2020-05-11
+AZ,Arizona,bars reopen,2020-05-15
+AZ,Arizona,bars reclosed,2020-06-30
+AZ,Arizona,bars reopen again,2020-08-27
+CA,California,shut down,2020-03-19
+CA,California,restaurants reopen,2020-05-14
+CA,California,bars reopen,2020-06-12
+CA,California,bars reclosed,2020-07-13
+CA,California,restaurants reclosed,2020-07-13
+CA,California,restaurants reopen again,2020-08-31
+CO,Colorado,shut down,2020-03-26
+CO,Colorado,restaurants reopen,2020-05-27
+CO,Colorado,bars reopen,2020-06-15
+CO,Colorado,bars reclosed,2020-07-01
+CT,Connecticut,shut down,2020-03-23
+CT,Connecticut,restaurants reopen,2020-06-17
+DC,District of Columbia,shut down,2020-04-01
+DC,District of Columbia,restaurants reopen,2020-06-22
+DC,District of Columbia,bars reopen,2020-06-21
+DE,Delaware,shut down,2020-03-24
+DE,Delaware,restaurants reopen,2020-06-01
+DE,Delaware,bars reopen,2020-06-01
+FL,Florida,shut down,2020-04-02
+FL,Florida,restaurants reopen,2020-05-04
+FL,Florida,bars reopen,2020-06-06
+FL,Florida,bars reclosed,2020-06-26
+GA,Georgia,shut down,2020-04-03
+GA,Georgia,restaurants reopen,2020-04-27
+GA,Georgia,bars reopen,2020-06-01
+HI,Hawaii,shut down,2020-03-25
+HI,Hawaii,restaurants reopen,2020-06-01
+HI,Hawaii,bars reopen,2020-06-19
+IA,Iowa,shut down,2020-03-17
+IA,Iowa,restaurants reopen,2020-05-01
+IA,Iowa,bars reopen,2020-05-27
+ID,Idaho,shut down,2020-03-25
+ID,Idaho,restaurants reopen,2020-05-16
+ID,Idaho,bars reopen,2020-05-30
+IL,Illinois,shut down,2020-03-21
+IL,Illinois,restaurants reopen,2020-06-26
+IL,Illinois,bars reopen,2020-06-24
+IN,Indiana,shut down,2020-03-24
+IN,Indiana,restaurants reopen,2020-05-11
+IN,Indiana,bars reopen,2020-06-14
+KS,Kansas,shut down,2020-03-30
+KS,Kansas,restaurants reopen,2020-05-04
+KS,Kansas,bars reopen,2020-05-27
+KY,Kentucky,shut down,2020-03-26
+KY,Kentucky,restaurants reopen,2020-05-22
+KY,Kentucky,bars reopen,2020-06-29
+KY,Kentucky,bars reclosed,2020-07-27
+KY,Kentucky,bars reopen again,2020-08-11
+LA,Louisiana,shut down,2020-03-23
+LA,Louisiana,restaurants reopen,2020-05-15
+LA,Louisiana,bars reopen,2020-06-01
+LA,Louisiana,bars reclosed,2020-07-13
+MA,Massachusetts,shut down,2020-03-24
+MA,Massachusetts,restaurants reopen,2020-06-22
+MD,Maryland,shut down,2020-03-30
+MD,Maryland,restaurants reopen,2020-06-12
+MD,Maryland,bars reopen,2020-06-12
+ME,Maine,shut down,2020-04-02
+ME,Maine,restaurants reopen,2020-06-15
+MI,Michigan,shut down,2020-03-24
+MI,Michigan,restaurants reopen,2020-06-01
+MI,Michigan,bars reopen,2020-06-08
+MI,Michigan,bars reclosed,2020-07-31
+MN,Minnesota,shut down,2020-03-27
+MN,Minnesota,restaurants reopen,2020-06-10
+MN,Minnesota,bars reopen,2020-06-10
+MO,Missouri,shut down,2020-04-06
+MO,Missouri,restaurants reopen,2020-05-04
+MO,Missouri,bars reopen,2020-05-04
+MS,Mississippi,shut down,2020-04-03
+MS,Mississippi,restaurants reopen,2020-05-07
+MS,Mississippi,bars reopen,2020-05-07
+MT,Montana,shut down,2020-03-28
+MT,Montana,restaurants reopen,2020-05-04
+MT,Montana,bars reopen,2020-05-04
+NC,North Carolina,shut down,2020-03-30
+NC,North Carolina,restaurants reopen,2020-05-22
+ND,North Dakota,shut down,2020-03-19
+ND,North Dakota,restaurants reopen,2020-05-01
+ND,North Dakota,bars reopen,2020-05-01
+NE,Nebraska,shut down,2020-03-19
+NE,Nebraska,restaurants reopen,2020-05-04
+NE,Nebraska,bars reopen,2020-06-01
+NH,New Hampshire,shut down,2020-03-27
+NH,New Hampshire,restaurants reopen,2020-06-15
+NH,New Hampshire,bars reopen,2020-06-15
+NJ,New Jersey,shut down,2020-03-21
+NM,New Mexico,shut down,2020-03-24
+NM,New Mexico,restaurants reopen,2020-06-01
+NM,New Mexico,restaurants reclosed,2020-07-24
+NM,New Mexico,restaurants reopen again,2020-08-29
+NV,Nevada,shut down,2020-04-01
+NV,Nevada,restaurants reopen,2020-05-09
+NV,Nevada,bars reopen,2020-05-29
+NY,New York,shut down,2020-03-22
+NY,New York,restaurants reopen,2020-06-12
+OH,Ohio,shut down,2020-03-23
+OH,Ohio,restaurants reopen,2020-05-21
+OH,Ohio,bars reopen,2020-05-21
+OK,Oklahoma,shut down,2020-03-17
+OK,Oklahoma,restaurants reopen,2020-05-01
+OK,Oklahoma,bars reopen,2020-05-15
+OR,Oregon,shut down,2020-03-23
+OR,Oregon,restaurants reopen,2020-05-15
+OR,Oregon,bars reopen,2020-05-15
+PA,Pennsylvania,shut down,2020-04-01
+PA,Pennsylvania,restaurants reopen,2020-05-27
+PA,Pennsylvania,bars reopen,2020-05-29
+RI,Rhode Island,shut down,2020-03-28
+RI,Rhode Island,restaurants reopen,2020-06-01
+RI,Rhode Island,bars reopen,2020-06-01
+SC,South Carolina,shut down,2020-04-07
+SC,South Carolina,restaurants reopen,2020-05-11
+SC,South Carolina,bars reopen,2020-05-11
+TN,Tennessee,shut down,2020-03-31
+TN,Tennessee,restaurants reopen,2020-04-27
+TN,Tennessee,bars reopen,2020-05-22
+TX,Texas,shut down,2020-04-02
+TX,Texas,restaurants reopen,2020-05-01
+TX,Texas,bars reopen,2020-05-18
+TX,Texas,bars reclosed,2020-06-26
+UT,Utah,shut down,2020-03-17
+UT,Utah,restaurants reopen,2020-05-01
+UT,Utah,bars reopen,2020-05-01
+VA,Virginia,shut down,2020-03-30
+VA,Virginia,restaurants reopen,2020-06-05
+VA,Virginia,bars reopen,2020-06-12
+VT,Vermont,shut down,2020-03-24
+VT,Vermont,restaurants reopen,2020-06-08
+VT,Vermont,bars reopen,2020-06-08
+WA,Washington,shut down,2020-03-23
+WA,Washington,restaurants reopen,2020-05-12
+WA,Washington,bars reopen,2020-05-12
+WA,Washington,bars reclosed,2020-07-24
+WI,Wisconsin,shut down,2020-03-25
+WI,Wisconsin,restaurants reopen,2020-05-13
+WI,Wisconsin,bars reopen,2020-05-13
+WV,West Virginia,shut down,2020-03-24
+WV,West Virginia,restaurants reopen,2020-05-21
+WV,West Virginia,bars reopen,2020-05-26
+WY,Wyoming,shut down,2020-03-19
+WY,Wyoming,restaurants reopen,2020-05-15
+WY,Wyoming,bars reopen,2020-05-15

@@ -1,0 +1,501 @@
+---
+title: "Bars and restaurants"
+author: "Andrew Ba Tran"
+date: "9/10/2020"
+output:
+  html_document:
+    code_folding: hide
+---
+
+This is a summary of all the cases per 10,000 people in states based on milestones such as reopening or closing or re-reopening.
+
+Click on the "Code" buttons on the right to expand the underlying code used in calculations
+
+```{r setup, warning=F, message=F}
+
+if (!require("devtools")) {
+  install.packages("devtools")
+}
+
+packages <- c("tidyverse", "knitr", "DT", "ggrepel", "geofacet")
+
+if (length(setdiff(packages, rownames(installed.packages()))) > 0) {
+  install.packages(setdiff(packages, rownames(installed.packages())), repos = "http://cran.us.r-project.org")  
+}
+
+
+library(tidyverse)
+library(knitr)
+library(DT)
+library(ggrepel)
+library(geofacet)
+
+# much of the data processing for this file can be found in 01_exploratory.R
+for_export <- read_csv("data/for_export.csv")
+```
+
+
+# Correlation test
+
+```{r correlation, warning=F, message=F}
+
+states_bars <- for_export %>% 
+  filter(bars_reopen_baseline %in% c(3, 4)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek, cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "week_a",
+    id == 2 ~ "week_b"
+  )) %>% 
+  group_by(region, id) %>% 
+  summarize(cases=sum(cases),
+            population=sum(population)) %>% 
+  mutate(cases_per_10k=cases/population*10000) %>% 
+  select(-cases, -population) %>% 
+  pivot_wider(names_from="id", values_from="cases_per_10k") %>% 
+  mutate(cases_pc_increase=(week_b-week_a)/week_a*100)
+
+
+states_bar_traffic <- for_export %>% 
+  filter(bars_reopen_baseline %in% c(0, 1)) %>% 
+  select(-detail, -detail_date) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,bar_visits, total_devices) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "bar_a",
+    TRUE ~ "bar_b"
+  )) %>% 
+  group_by(region, id) %>% 
+  summarize(bar_visits=sum(bar_visits),
+            total_devices=mean(total_devices)) %>% 
+  mutate(bar_traffic=bar_visits/total_devices*1000) %>% 
+  select(-bar_visits, -total_devices) %>% 
+  pivot_wider(names_from="id", values_from="bar_traffic") %>% 
+  mutate(bar_traffic_increase=(bar_b-bar_a)/bar_a*100)
+
+states_bars <- left_join(states_bars,  states_bar_traffic) 
+
+ggplot(states_bars, aes(x=cases_pc_increase, y=bar_traffic_increase, label=region)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  theme_minimal() +
+  geom_text_repel() +
+  labs(title="Bar foot traffic change after reopening vs. lagged change in covid cases",
+       x="Change in cases per capita 3-4 weeks after bars reopened",
+       y="Change in foot traffic 1 week after bars reopened")
+
+cor.test(states_bars$cases_pc_increase, states_bars$bar_traffic_increase)
+
+```
+
+# Bars reopening as a baseline
+
+```{r bars_baseline, warning=F, message=F, fig.width=9, fig.height=6.5}
+four<- c(-4, -3, -2, -1, 0, 1,2,3, 4)
+
+for_export %>% 
+  #  filter(bars_baseline %in% three) %>% 
+  filter(bars_reopen_baseline %in% four) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(bar_per=bar_per*100) %>% 
+  unique() %>% 
+  filter(bar_per<200) %>% 
+  ggplot(aes(x=bars_reopen_baseline, y=cases_pc)) +
+  geom_line() +
+  geom_line(aes(x=bars_reopen_baseline, y=bar_per), color="blue") +
+  geom_vline(aes(xintercept=0), alpha=.5, color="red")+
+  facet_geo(~region) +
+  labs(title="Cases per capita four weeks before, when bars reopened, and four weeks after")
+
+```
+
+
+# Visualizing when bars and restaurants closed or reopened
+
+```{r exploratory,warning=F, message=F, fig.width=9, fig.height=6.5}
+
+
+shutdown_baseline <- for_export %>% 
+  filter(detail=="shut down") %>% 
+  unique()
+
+bars_reopen_baseline<- for_export %>% 
+  filter(detail=="bars reopen") %>% 
+  unique()
+rest_reopen_baseline<- for_export %>% 
+  filter(detail=="restaurants reopen") %>% 
+  unique()
+
+reclosed_baseline<- for_export %>% 
+  filter(detail=="restaurants reclosed" | detail=="bars reclosed") %>% 
+  unique()
+
+reopened_again_baseline<- for_export %>% 
+  filter(detail=="restaurants reopen again" | detail=="bars reopen again") %>% 
+  unique()
+
+# visualizing cases per capita and when bars/restaurants opened/closed
+for_export %>% 
+  select(-detail, -detail_date, -shutdown_baseline, -bars_reopen_baseline,-rest_reopen_baseline,
+         -reclosed_baseline,-reopened_again_baseline) %>%
+  unique() %>% 
+  ggplot(aes(x=start_date, y=cases_pc)) +
+  geom_col() +
+  geom_vline(data=shutdown_baseline, aes(xintercept=start_date), alpha=.5, color="tomato") +
+  geom_vline(data=bars_reopen_baseline, aes(xintercept=start_date), alpha=.5, color="midnightblue") +
+  geom_vline(data=rest_reopen_baseline, aes(xintercept=start_date), alpha=.5, color="blue2") +
+  geom_vline(data=reclosed_baseline, aes(xintercept=start_date), alpha=.5, color="tomato3") +
+  geom_vline(data=reopened_again_baseline, aes(xintercept=start_date), alpha=.5, color="dodgerblue4") +
+  facet_geo(~region) +
+  labs(title="Covid-19 cases per capita and when bars/restaurants closed and reopened")
+
+```
+### After states shut down businesses
+
+On the week of the shutdown versus 4 weeks later.
+
+```{r after_shutdown, warning=F, message=F}
+### shut down ----
+
+shutdown <- for_export %>% 
+  filter(shutdown_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100, bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "shutdown",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(cases=sum(cases),
+            population=sum(population)) %>% 
+  mutate(cases_per_10k=cases/population*10000)
+
+
+shutdown2 <- for_export %>% 
+  filter(shutdown_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100, bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "shutdown",
+    TRUE ~ "after"
+  )) %>% 
+  mutate(per_capita=cases/population*10000) %>% 
+  group_by(id) %>% 
+  summarize(cases_per_10k=mean(per_capita))
+  
+
+shutdown_traffic <- for_export %>% 
+  filter(shutdown_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,rest_visits, bar_visits, total_devices) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "shutdown",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(rest_visits=sum(rest_visits),
+            bar_visits=sum(bar_visits),
+            total_devices=mean(total_devices)) %>% 
+  mutate(rest_traffic=rest_visits/total_devices*1000,
+         bar_traffic=bar_visits/total_devices*1000)
+
+shutdown <- left_join(shutdown, shutdown_traffic) %>% 
+  select(id, cases, cases_per_10k, rest_traffic, bar_traffic) %>% 
+  arrange(desc(id)) 
+
+kable(shutdown)
+
+shutdown_table_cases <- for_export %>% 
+  filter(shutdown_baseline %in% c(0,4)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100,
+         bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases_pc) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "shutdown",
+    TRUE ~ "after"
+  )) %>% 
+  ungroup() %>% 
+  select(-MMWRweek) %>% 
+  pivot_wider(names_from="id",values_from="cases_pc") %>% 
+  mutate(more=case_when(
+    after>shutdown ~ "More", 
+    TRUE ~ "Less"))
+```
+
+How many states saw an increase or decrease in cases per capita 4 weeks later?
+
+```{r restaurants_percap}
+shutdown_table_cases %>% count(more) %>% 
+kable()
+
+
+
+```
+
+
+### After states reopened bars
+
+On the week of the reopening versus 4 weeks later.
+
+```{r before_after_bars, warning=F, message=F}
+
+nat_bars <- for_export %>% 
+  filter(bars_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek, cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(cases=sum(cases),
+            population=sum(population)) %>% 
+  mutate(cases_per_10k=cases/population*10000)
+
+nat_bar_traffic <- for_export %>% 
+  filter(bars_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,bar_visits, total_devices) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(bar_visits=sum(bar_visits),
+            total_devices=mean(total_devices)) %>% 
+  mutate(bar_traffic=bar_visits/total_devices*1000)
+
+nat_bars <- left_join(nat_bars, nat_bar_traffic) %>% 
+  select(id, cases, cases_per_10k, bar_traffic) %>% 
+  arrange(desc(id))
+
+kable(nat_bars)
+```
+
+How many states saw an increase or decrease in cases per capita 4 weeks later?
+
+```{r before_after_bars2, warning=F, message=F}
+bars_table_cases <- for_export %>% 
+  filter(bars_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear,MMWRweek, cases_pc) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  ungroup() %>% 
+  select(-MMWRweek) %>% 
+  pivot_wider(names_from="id",values_from="cases_pc") %>% 
+  mutate(more=case_when(
+    after>open ~ "More", 
+    TRUE ~ "Less"))
+
+bars_table_cases %>% count(more) %>% 
+kable()
+
+```
+
+
+### After states reopened restaurants
+
+On the week of the reopening versus 4 weeks later.
+
+
+```{r restaurants_reopened, warning=F, message=F}
+#### national restaurants ---
+
+nat_rest <- for_export %>% 
+  filter(rest_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(cases=sum(cases),
+            population=sum(population)) %>% 
+  mutate(cases_per_10k=cases/population*10000)
+
+nat_rest_traffic <- for_export %>% 
+  filter(rest_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,rest_visits, total_devices) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(rest_visits=sum(rest_visits),
+            total_devices=mean(total_devices)) %>% 
+  mutate(rest_traffic=rest_visits/total_devices*1000)
+
+nat_rest <- left_join(nat_rest, nat_rest_traffic) %>% 
+  select(id, cases, cases_per_10k, rest_traffic) %>% 
+  arrange(desc(id))
+
+kable(nat_rest)
+```
+
+How many states saw an increase or decrease in cases per capita 4 weeks later?
+
+```{r restaurants_reopened2}
+rest_table_cases <- for_export %>% 
+  filter(rest_reopen_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases_pc) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "open",
+    TRUE ~ "after"
+  )) %>% 
+  ungroup() %>% 
+  select(-MMWRweek) %>% 
+  pivot_wider(names_from="id",values_from="cases_pc") %>% 
+  mutate(more=case_when(
+    after>open ~ "More", 
+    TRUE ~ "Less"))
+
+
+rest_table_cases %>% count(more) %>% 
+kable()
+
+```
+
+
+
+
+### After states reclosed restaurants and bars
+
+On the week of the reopening versus 4 weeks later.
+
+
+```{r restaurants_reclosed, warning=F, message=F}
+#### national restaurants ---
+
+nat_reclosed <- for_export %>% 
+  filter(reclosed_baseline  %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100, bar_per=bar_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases, population) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "reclosed",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(cases=sum(cases),
+            population=sum(population)) %>% 
+  mutate(cases_per_10k=cases/population*10000)
+
+nat_reclosed_traffic <- for_export %>% 
+  filter(reclosed_baseline  %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,rest_visits, bar_visits, total_devices) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "reclosed",
+    TRUE ~ "after"
+  )) %>% 
+  group_by(id) %>% 
+  summarize(rest_visits=sum(rest_visits),
+            bar_visits=sum(bar_visits),
+            total_devices=mean(total_devices)) %>% 
+  mutate(rest_traffic=rest_visits/total_devices*1000,
+         bar_traffic=bar_visits/total_devices*1000)
+
+nat_reclosed <- left_join(nat_reclosed, nat_reclosed_traffic) %>% 
+  select(id, cases, cases_per_10k, rest_traffic, bar_traffic) %>% 
+  arrange(desc(id))
+
+kable(nat_reclosed)
+```
+
+How many states saw an increase or decrease in cases per capita 4 weeks later?
+
+```{r restaurants_reclosed2}
+reclosed_table_cases <- for_export %>% 
+  filter(reclosed_baseline %in% c(0, 3)) %>% 
+  select(-detail, -detail_date) %>% 
+  mutate(rest_per=rest_per*100) %>% 
+  unique() %>% 
+  select(region, NAME, MMWRyear, MMWRweek,cases_pc) %>% 
+  arrange(region, NAME, MMWRyear, MMWRweek) %>% 
+  group_by(region, NAME, MMWRyear) %>% 
+  mutate(id=row_number()) %>% 
+  mutate(id=case_when(
+    id == 1 ~ "reclosed",
+    TRUE ~ "after"
+  )) %>% 
+  ungroup() %>% 
+  select(-MMWRweek) %>% 
+  pivot_wider(names_from="id",values_from="cases_pc") %>% 
+  mutate(more=case_when(
+    after>reclosed ~ "More", 
+    TRUE ~ "Less"))
+
+
+reclosed_table_cases %>% count(more) %>% 
+kable()
+
+```
